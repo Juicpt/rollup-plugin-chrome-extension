@@ -16,6 +16,17 @@ export interface WebAccessibleResourceById {
   use_dynamic_url?: boolean
 }
 
+export interface ChromeManifestBackground {
+  service_worker: string
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  type?: 'module' | (string & {}) // If the service worker uses ES modules
+}
+
+export interface FirefoxManifestBackground {
+  scripts: string[]
+  persistent?: false
+}
+
 export interface ManifestV3 {
   // Required
   manifest_version: number
@@ -30,12 +41,13 @@ export interface ManifestV3 {
   // Optional
 
   action?: chrome.runtime.ManifestAction | undefined
-  author?: string | undefined
+  /**
+   * @see https://developer.chrome.com/docs/extensions/reference/manifest/author
+   */
+  author?: { email: string } | undefined
   background?:
-    | {
-        service_worker: string
-        type?: 'module' // If the service worker uses ES modules
-      }
+    | ChromeManifestBackground
+    | FirefoxManifestBackground
     | undefined
   chrome_settings_overrides?:
     | {
@@ -158,12 +170,12 @@ export interface ManifestV3 {
   incognito?: string | undefined
   input_components?:
     | {
-        name?: string | undefined
-        type?: string | undefined
+        name: string
         id?: string | undefined
-        description?: string | undefined
-        language?: string | undefined
-        layouts?: string[] | undefined
+        language?: string | string[] | undefined
+        layouts?: string | string[] | undefined
+        input_view?: string | undefined
+        options_page?: string | undefined
       }[]
     | undefined
   key?: string | undefined
@@ -228,6 +240,11 @@ export interface ManifestV3 {
     | {
         pages: string[]
         content_security_policy?: string | undefined
+      }
+    | undefined
+  side_panel?:
+    | {
+      default_path?: string | undefined
       }
     | undefined
   short_name?: string | undefined

@@ -4,7 +4,7 @@
 declare const self: ServiceWorkerGlobalScope
 export {}
 
-import { CrxHMRPayload } from 'src/types'
+import type { CrxHMRPayload } from 'src/types'
 import type { HMRPayload } from 'vite'
 
 // injected by the hmr plugin when served
@@ -17,7 +17,7 @@ declare const __SERVER_PORT__: string
 
 /* -------- REDIRECT FETCH TO THE DEV SERVER ------- */
 
-const ownOrigin = new URL(chrome.runtime.getURL('/')).origin
+const ownOrigin = `chrome-extension://${chrome.runtime.id}`;
 self.addEventListener('fetch', (fetchEvent) => {
   const url = new URL(fetchEvent.request.url)
   if (url.origin === ownOrigin) {
@@ -46,6 +46,7 @@ async function sendToServer(url: URL): Promise<Response> {
   return new Response(response.body, {
     headers: {
       'Content-Type': response.headers.get('Content-Type') ?? 'text/javascript',
+      'Cache-Control': response.headers.get('Cache-Control') ?? '',
     },
   })
 }
@@ -137,5 +138,8 @@ socket.addEventListener('close', async ({ wasClean }) => {
   if (wasClean) return
   console.log(`[vite] server connection lost. polling for restart...`)
   await waitForSuccessfulPing()
-  chrome.runtime.reload()
+  handleCrxHmrPayload({
+    type: 'custom',
+    event: 'crx:runtime-reload',
+  })
 })

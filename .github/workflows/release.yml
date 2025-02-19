@@ -15,26 +15,26 @@ jobs:
     environment: production
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: "14"
+          node-version: "22"
 
       - name: Setup PNPM
         # You may pin to the exact commit or the version.
         # uses: pnpm/action-setup@646cdf48217256a3d0b80361c5a50727664284f2
-        uses: pnpm/action-setup@v2.2.1
+        uses: pnpm/action-setup@v4
         with:
           # Version of PNPM to install
-          version: 6.3.0
+          version: 9.15.2
           # Where to store PNPM files
           # dest: # optional, default is ~/setup-pnpm
           # If specified, run `pnpm install`
           # run_install: true
 
       - name: Cache pnpm modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-pnpm-modules
         with:
@@ -55,7 +55,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # - name: Send a Slack notification if a publish happens
-      #   if: steps.changesets.outputs.published == 'true'
-      #   # You can do something when a publish happens.
-      #   run: my-slack-bot send-notification --message "A new version of ${GITHUB_REPOSITORY} was published!"
+      - if: steps.changesets.outputs.published == 'true'
+        name: Github Releases To Discord
+        uses: sillyangel/releases-to-discord@v1
+        with:
+          webhook_url: ${{ secrets.WEBHOOK_URL }}
+          color: "2105893"
+          username: "Release Changelog"
+          avatar_url: "https://cdn.discordapp.com/avatars/487431320314576937/bd64361e4ba6313d561d54e78c9e7171.png"
