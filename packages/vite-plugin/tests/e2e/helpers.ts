@@ -1,5 +1,15 @@
 import jsesc from 'jsesc'
 import { BrowserContext, Locator, Page } from 'playwright-chromium'
+import { basename } from 'src/path'
+import { TestContext, vi } from 'vitest'
+import fs from 'fs-extra'
+
+let count = 0
+export function getCustomId({ meta }: TestContext): string {
+  const filename = meta.file?.name
+  if (!filename) throw new TypeError('Test context filename is undefined')
+  return `${basename(filename, '.test.ts')}-${count++}`
+}
 
 export async function getPage(
   browser: BrowserContext,
@@ -55,3 +65,29 @@ export async function waitForInnerHtml(
   }
   throw new Error('could not find element')
 }
+
+export const createUpdate =
+  ({
+    target,
+    src,
+    plugins = [],
+  }: {
+    target: string
+    src: string
+    plugins?: (() => Promise<void>)[]
+  }) =>
+  async (includes: string, srcDir = src) => {
+    await vi.advanceTimersByTimeAsync(1000)
+    return Promise.all([
+      ...plugins.map((p) => p()),
+      fs.copy(srcDir, target, {
+        recursive: true,
+        overwrite: true,
+        filter: (f) => {
+          if (fs.lstatSync(f).isDirectory()) return true
+          const base = basename(f)
+          return base.endsWith(includes)
+        },
+      }),
+    ])
+  }

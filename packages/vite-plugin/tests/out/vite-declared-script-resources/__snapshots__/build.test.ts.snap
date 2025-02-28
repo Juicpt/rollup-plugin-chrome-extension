@@ -1,0 +1,80 @@
+// Vitest Snapshot v1
+
+exports[`build fs output > _00 manifest.json 1`] = `
+Object {
+  "content_scripts": Array [
+    Object {
+      "js": Array [
+        "assets/content.ts-loader.hash0.js",
+      ],
+      "matches": Array [
+        "https://google.com/search*",
+        "*://a.com/*",
+      ],
+    },
+  ],
+  "manifest_version": 3,
+  "name": "test extension",
+  "version": "0.1.0",
+  "web_accessible_resources": Array [
+    Object {
+      "matches": Array [
+        "*://a.com/*",
+        "https://google.com/*",
+      ],
+      "resources": Array [
+        "assets/content.ts.hash1.js",
+        "assets/font.hash2.otf",
+        "assets/image.hash3.png",
+        "assets/script.ts.hash4.js",
+      ],
+      "use_dynamic_url": false,
+    },
+  ],
+}
+`;
+
+exports[`build fs output > _01 output files 1`] = `
+Array [
+  "assets/content.ts-loader.hash0.js",
+  "assets/content.ts.hash1.js",
+  "assets/font.hash2.otf",
+  "assets/image.hash3.png",
+  "assets/script.ts.hash4.js",
+  "manifest.json",
+]
+`;
+
+exports[`build fs output > assets/content.ts.hash1.js 1`] = `
+"const icon = \\"/assets/image.hash3.png\\";
+const font = \\"/assets/font.hash2.otf\\";
+const scriptUrl = \\"/assets/script.ts.hash4.js\\";
+console.log(\\"content.ts\\", { icon, font });
+const script = document.createElement(\\"script\\");
+script.src = chrome.runtime.getURL(scriptUrl);
+script.type = \\"module\\";
+document.body.append(script);
+"
+`;
+
+exports[`build fs output > assets/content.ts-loader.hash0.js 1`] = `
+"(function () {
+  'use strict';
+
+  const injectTime = performance.now();
+  (async () => {
+    const { onExecute } = await import(
+      /* @vite-ignore */
+      chrome.runtime.getURL(\\"assets/content.ts.hash1.js\\")
+    );
+    onExecute?.({ perf: { injectTime, loadTime: performance.now() - injectTime } });
+  })().catch(console.error);
+
+})();
+"
+`;
+
+exports[`build fs output > assets/script.ts.hash4.js 1`] = `
+"console.log(\\"main world script\\");
+"
+`;

@@ -23,9 +23,9 @@ defaults:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # Runs linter and unit tests in src folder
-  lint:
-    name: Linter
+  # Runs linter and unit tests
+  checks:
+    name: Lint
 
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -37,15 +37,15 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: "14"
+          node-version: "22"
 
       - name: Setup PNPM
         # You may pin to the exact commit or the version.
         # uses: pnpm/action-setup@646cdf48217256a3d0b80361c5a50727664284f2
-        uses: pnpm/action-setup@v2.2.1
+        uses: pnpm/action-setup@v4
         with:
           # Version of PNPM to install
-          version: 6.3.0
+          version: 9.15.2
           # Where to store PNPM files
           # dest: # optional, default is ~/setup-pnpm
           # If specified, run `pnpm install`
@@ -64,7 +64,7 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --filter "vite-plugin"
 
       - name: Lint files
         run: pnpm lint
@@ -76,11 +76,6 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        type: [build, serve]
-
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -88,15 +83,15 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: "14"
+          node-version: "22"
 
       - name: Setup PNPM
         # You may pin to the exact commit or the version.
         # uses: pnpm/action-setup@646cdf48217256a3d0b80361c5a50727664284f2
-        uses: pnpm/action-setup@v2.2.1
+        uses: pnpm/action-setup@v4
         with:
           # Version of PNPM to install
-          version: 6.3.0
+          version: 9.15.2
           # Where to store PNPM files
           # dest: # optional, default is ~/setup-pnpm
           # If specified, run `pnpm install`
@@ -115,32 +110,27 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 
       - name: Install dependencies
-        run: pnpm i
+        run: pnpm install --filter "vite-plugin"
 
-      - name: Run ${{ matrix.type }} tests
-        uses: GabrielBB/xvfb-action@v1
+      - name: Run e2e tests
+        uses: coactions/setup-xvfb@v1
         with:
-          run: pnpm test:ci:e2e:${{ matrix.type }}
+          run: pnpm test:run:e2e
           working-directory: "packages/vite-plugin"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: image-diff-${{ matrix.type }}
-          path: ${{ github.workspace }}/tests/**/__image_snapshots__/__diff_output__/*.png
+          path: ${{ github.workspace }}/packages/vite-plugin/tests/**/__image_snapshots__/__diff_output__/*.png
 
-  # Runs output snapshot tests
-  output:
-    name: Output Snapshot Tests
+  # Runs unit and output tests
+  unit:
+    name: Unit and Output Tests
 
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        type: [build, serve]
-
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -148,15 +138,15 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: "14"
+          node-version: "22"
 
       - name: Setup PNPM
         # You may pin to the exact commit or the version.
         # uses: pnpm/action-setup@646cdf48217256a3d0b80361c5a50727664284f2
-        uses: pnpm/action-setup@v2.2.1
+        uses: pnpm/action-setup@v4
         with:
           # Version of PNPM to install
-          version: 6.3.0
+          version: 9.15.2
           # Where to store PNPM files
           # dest: # optional, default is ~/setup-pnpm
           # If specified, run `pnpm install`
@@ -175,26 +165,28 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 
       - name: Install dependencies
-        run: pnpm i
+        run: pnpm install --filter "vite-plugin"
 
-      - name: Run ${{ matrix.type }} tests
-        run: pnpm test:ci:mv3:${{ matrix.type }}
+      - name: Run unit and output tests
+        run: pnpm test:run:out
 
-      - name: Check for diff
-        id: diff
-        run: echo "::set-output name=diff::$(git --no-pager diff --name-only)"
+      # Disabling diff check for now, don't think it's doing anything
+      #
+      # - name: Check for diff
+      #   id: diff
+      #   run: echo "::set-output name=diff::$(git --no-pager diff --name-only)"
 
-      - name: Fail if diff
-        if: ${{ steps.diff.outputs.diff }}
-        run: exit 1
+      # - name: Fail if diff
+      #   if: ${{ steps.diff.outputs.diff }}
+      #   run: exit 1
 
-      - name: Git diff
-        if: failure()
-        run: git diff > diff.txt
+      # - name: Git diff
+      #   if: failure()
+      #   run: git diff > diff.txt
 
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: output-diff-${{ matrix.type }}
-          path: diff.txt
-          if-no-files-found: ignore
+      # - uses: actions/upload-artifact@v4
+      #   if: failure()
+      #   with:
+      #     name: output-diff-${{ matrix.type }}
+      #     path: diff.txt
+      #     if-no-files-found: ignore

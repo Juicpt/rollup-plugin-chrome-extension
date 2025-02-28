@@ -1,0 +1,120 @@
+// Vitest Snapshot v1
+
+exports[`build fs output > _00 manifest.json 1`] = `
+Object {
+  "content_scripts": Array [
+    Object {
+      "css": Array [
+        "assets/index.hash1.css",
+      ],
+      "js": Array [
+        "assets/index.ts-loader.hash0.js",
+      ],
+      "matches": Array [
+        "http://*/*",
+        "https://*/*",
+      ],
+    },
+    Object {
+      "css": Array [
+        "assets/index.hash3.css",
+      ],
+      "js": Array [
+        "assets/index.ts-loader.hash2.js",
+      ],
+      "matches": Array [
+        "http://*/*",
+        "https://*/*",
+      ],
+    },
+  ],
+  "manifest_version": 3,
+  "name": "test extension",
+  "version": "0.1.0",
+  "web_accessible_resources": Array [
+    Object {
+      "matches": Array [
+        "http://*/*",
+        "https://*/*",
+      ],
+      "resources": Array [
+        "assets/index.ts.hash4.js",
+        "assets/index.ts.hash5.js",
+      ],
+      "use_dynamic_url": false,
+    },
+  ],
+}
+`;
+
+exports[`build fs output > _01 output files 1`] = `
+Array [
+  "assets/index.hash1.css",
+  "assets/index.hash3.css",
+  "assets/index.ts-loader.hash0.js",
+  "assets/index.ts-loader.hash2.js",
+  "assets/index.ts.hash4.js",
+  "assets/index.ts.hash5.js",
+  "manifest.json",
+]
+`;
+
+exports[`build fs output > assets/index.hash1.css 1`] = `
+"body {
+  color: red;
+}
+"
+`;
+
+exports[`build fs output > assets/index.hash3.css 1`] = `
+"body {
+  color: blue;
+}
+"
+`;
+
+exports[`build fs output > assets/index.ts.hash4.js 1`] = `
+"const styles = \\"\\";
+console.log(\\"content2\\");
+"
+`;
+
+exports[`build fs output > assets/index.ts.hash5.js 1`] = `
+"const styles = \\"\\";
+console.log(\\"content1\\");
+"
+`;
+
+exports[`build fs output > assets/index.ts-loader.hash0.js 1`] = `
+"(function () {
+  'use strict';
+
+  const injectTime = performance.now();
+  (async () => {
+    const { onExecute } = await import(
+      /* @vite-ignore */
+      chrome.runtime.getURL(\\"assets/index.ts.hash5.js\\")
+    );
+    onExecute?.({ perf: { injectTime, loadTime: performance.now() - injectTime } });
+  })().catch(console.error);
+
+})();
+"
+`;
+
+exports[`build fs output > assets/index.ts-loader.hash2.js 1`] = `
+"(function () {
+  'use strict';
+
+  const injectTime = performance.now();
+  (async () => {
+    const { onExecute } = await import(
+      /* @vite-ignore */
+      chrome.runtime.getURL(\\"assets/index.ts.hash4.js\\")
+    );
+    onExecute?.({ perf: { injectTime, loadTime: performance.now() - injectTime } });
+  })().catch(console.error);
+
+})();
+"
+`;

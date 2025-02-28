@@ -1,0 +1,11 @@
+{
+  "content_scripts": [
+    {
+      "js": ["src/content.ts"],
+      "matches": ["https://google.com/search*", "*://a.com/*"]
+    }
+  ],
+  "manifest_version": 3,
+  "name": "test extension",
+  "version": "0.1.0"
+}
